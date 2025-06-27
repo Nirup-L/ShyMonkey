@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase File Upload</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+  <h2>Upload Image/Video</h2>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload</button>
+
+  <p id="status"></p>
+
+  <script>
+    function uploadFile() {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("Please select a file");
+
+      const storageRef = firebase.storage().ref('uploads/' + file.name);
+      const uploadTask = storageRef.put(file);
+
+      document.getElementById('status').innerText = 'Uploading...';
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          document.getElementById('status').innerText = `Uploading: ${progress.toFixed(0)}%`;
+        },
+        (error) => {
+          document.getElementById('status').innerText = 'Upload failed: ' + error;
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            document.getElementById('status').innerHTML = `✅ Uploaded! <a href="${downloadURL}" target="_blank">View File</a>`;
+          });
+        }
+      );
+    }
+  </script>
+</body>
+</html>
